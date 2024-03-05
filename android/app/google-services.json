@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1037146225574",
+    "project_id": "taco-bell-management",
+    "storage_bucket": "taco-bell-management.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1037146225574:android:0477527551c87a5c3aad67",
+        "android_client_info": {
+          "package_name": "com.example.taco_bell_managment"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByF2JEvYpZBbWd_gAEkC-GFRPiwJlX5bE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

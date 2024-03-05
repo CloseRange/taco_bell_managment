@@ -1,0 +1,241 @@
+// ignore_for_file: no_logic_in_create_state
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:taco_bell_managment/util/style_sheet.dart';
+
+class InputGroup {
+  final Map<String, TextEditingController> _data = {};
+  final Map<String, _InputGroupBox> _dataWidgets = {};
+
+  InputGroup(List<String> widgets) {
+    for (int i = 0; i < widgets.length; i++) {
+      _data[widgets[i]] = TextEditingController();
+    }
+  }
+
+  String get(String key) {
+    print("==>" + (_data[key]?.text ?? ""));
+    return _data[key]?.text ?? "";
+  }
+
+  void setError(String key, bool isError) {
+    _dataWidgets[key]?.isError = isError;
+  }
+
+  Widget field(
+    BuildContext context,
+    String key, {
+    String? hint,
+    bool obscure = false,
+    bool isNumber = false,
+  }) {
+    if (_data[key] == null) return const Text("Error: No key found");
+    _dataWidgets[key] =
+        _InputGroupBox(_data[key]!, hint ?? key, obscure, isNumber);
+    return _dataWidgets[key]!;
+  }
+
+  operator [](String s) => _data[s]?.text ?? "Invalid key";
+}
+
+// ignore: must_be_immutable
+class _InputGroupBox extends StatefulWidget {
+  var hint = "";
+  var obscure = false;
+  var isNumber = false;
+  var isError = false;
+  TextEditingController controller;
+  _InputGroupBox(this.controller, this.hint, this.obscure, this.isNumber);
+
+  @override
+  State<_InputGroupBox> createState() => _InputGroupBoxState();
+}
+
+class _InputGroupBoxState extends State<_InputGroupBox> {
+  _InputGroupBoxState();
+
+  @override
+  void dispose() {
+    widget.controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Palette.getInput().main,
+        border: Border.all(
+            color: widget.isError
+                ? Palette.getError().main
+                : Palette.getInput().text),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20.0),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+              textSelectionTheme: const TextSelectionThemeData(
+                  // selectionColor: Palette.getTint().light,
+                  // cursorColor: Colors.red,
+                  // selectionHandleColor: Colors.black,
+                  )),
+          child: TextField(
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              labelText: widget.hint,
+              labelStyle: widget.isError
+                  ? TextStyle(color: Palette.getError().main)
+                  : null,
+              // isDense: true,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+            ),
+            controller: widget.controller,
+            obscureText: widget.obscure,
+            keyboardType:
+                widget.isNumber ? TextInputType.number : TextInputType.text,
+            // onChanged: (value) => {},
+            // cursorColor: Palette.getTint().main,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ignore: must_be_immutable
+class EmphesizedButton extends StatefulWidget {
+  String text;
+  void Function()? callback;
+  Future<dynamic> Function()? asyncCallback;
+  bool enabled;
+
+  EmphesizedButton(
+    this.text, {
+    this.asyncCallback,
+    this.callback,
+    this.enabled = true,
+    super.key,
+  });
+
+  @override
+  State<EmphesizedButton> createState() => _EmphesizedButtonState();
+}
+
+class _EmphesizedButtonState extends State<EmphesizedButton> {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _onHit,
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Palette.getButton().main.withAlpha(widget.enabled ? 255 : 100),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+            child: Text(widget.text,
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Palette.getButton().text,
+                    fontWeight: FontWeight.bold))),
+      ),
+    );
+  }
+
+  void _onHit() {
+    if (widget.callback != null) {
+      widget.callback!();
+    } else if (widget.asyncCallback != null) {
+      setEnabled(false);
+      widget.asyncCallback!().then((status) => setEnabled(true));
+    }
+    // widget.callback ?? widget.asyncCallback
+  }
+
+  void setEnabled(bool enabled) {
+    setState(() {
+      widget.enabled = enabled;
+    });
+  }
+}
+
+// ignore: must_be_immutable
+class LinkMessage extends StatefulWidget {
+  String message, link;
+  late void Function() callback;
+  double? fontSize;
+  Color? color;
+  bool enabled;
+
+  LinkMessage(
+    this.message,
+    this.link,
+    this.callback, {
+    this.color,
+    this.fontSize,
+    super.key,
+    this.enabled=true,
+  });
+
+  @override
+  State<LinkMessage> createState() => _LinkMessageState();
+}
+
+class _LinkMessageState extends State<LinkMessage> {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(widget.message,
+            style: TextStyle(
+                color: Palette.getLink().main,
+                fontWeight: FontWeight.bold,
+                fontSize: widget.fontSize)),
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: widget.callback,
+          child: Text(widget.link,
+              style: TextStyle(
+                  color: (widget.color ?? Palette.getLink().text).withAlpha(widget.enabled ? 255 : 125),
+                  fontWeight: FontWeight.bold,
+                  fontSize: widget.fontSize)),
+        )
+      ],
+    );
+  }
+}
+
+class CardFormatter extends TextInputFormatter {
+  final String sample;
+  final String separator;
+
+  CardFormatter({
+    required this.sample,
+    required this.separator,
+  });
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    var oldLength = oldValue.text.length;
+    var newLength = newValue.text.length;
+    if (newLength > 0) {
+      if (newLength > oldLength) {
+        if (newLength > sample.length) return oldValue;
+        if (sample[newLength - 1] == separator) {
+          return TextEditingValue(
+              text:
+                  '${oldValue.text}$separator${newValue.text.substring(newLength - 1)}',
+              selection: TextSelection.collapsed(
+                offset: newValue.selection.end + 1,
+              ));
+        }
+      }
+    }
+    return newValue;
+  }
+}

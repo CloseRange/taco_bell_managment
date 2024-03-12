@@ -4,9 +4,8 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:taco_bell_managment/api/firebase_api.dart';
+import 'package:taco_bell_managment/api/phone_verify.dart';
 import 'package:taco_bell_managment/page/account_setup/verify_phone_screen.dart';
-import 'package:taco_bell_managment/util/phone_setup.dart';
 import 'package:taco_bell_managment/util/ui_widgets.dart';
 import 'package:taco_bell_managment/util/style_sheet.dart';
 
@@ -18,7 +17,8 @@ class CreateAccountScreen extends StatefulWidget {
 }
 
 class _CreateAccountState extends State<StatefulWidget> {
-  var inputGroup = InputGroup(["Phone Number", "Username", "Password", "Retype Password"]);
+  var inputGroup =
+      InputGroup(["Phone Number", "Username", "Password", "Retype Password"]);
   String errorMessage = "";
 
   @override
@@ -66,47 +66,45 @@ class _CreateAccountState extends State<StatefulWidget> {
                   SizedBox(height: 10),
                   inputGroup.field(context, "Retype Password", obscure: true),
                   SizedBox(height: 10),
-                  EmphesizedButton(
-                      "Create Account",
-                      callback: () => FirebaseApi.callFirebase("callVerifyPhonenumber", {
-                            "username": inputGroup.get("Username"),
-                            "phonenumber": phoneNumberConversion(),
-                            "password": inputGroup.get("Password"),
-                            "notifID": FirebaseApi.token,
-                          }).then((response) =>
-                              onCreateResponse(context, response))),
+                  EmphesizedButton("Create Account",
+                      callback: () => onCreateAccountResponse(context)),
                   SizedBox(height: 15),
                   LinkMessage("Already have an account?", "Login",
-                      () => onLogin(context)),
+                      () => Navigator.pop(context)),
                 ],
               ),
             ),
           ),
         )),
       );
-  void onLogin(BuildContext context) async {
-    Navigator.pop(context);
-  }
+  // void onLogin(BuildContext context) async {
+  //   Navigator.pop(context);
+  // }
 
-  void onVerifyPhone(BuildContext context) async {
-    Navigator.push(context,
-        CupertinoPageRoute(builder: (context) => const VerifyPhoneScreen()));
-  }
+  // void onVerifyPhone(BuildContext context) async {
+  // }
 
-  String phoneNumberConversion() {
-    PhoneSetup.setPhone(inputGroup.get("Phone Number"));
-    return PhoneSetup.getFullPhoneNumber();
-  }
+  // String phoneNumberConversion() {
+  //   // PhoneSetup.setPhone(inputGroup.get("Phone Number"));
+  //   PhoneVerify.setPhonenumber(inputGroup.get("Phone Number"));
 
-  void onCreateResponse(BuildContext context, dynamic response) {
+  //   return PhoneVerify.phonenumberFull;
+  // }
+
+  void onCreateAccountResponse(BuildContext context) {
     // print(response);
-    setState(() {
-      if (response["error"] != "") {
-        errorMessage = response["error"];
-      } else {
-        PhoneSetup.setUsername(inputGroup.get("Username"));
-        onVerifyPhone(context);
-      }
-    });
+    PhoneVerify.attemptAccountCreate(inputGroup.get("Username"),
+            inputGroup.get("Password"), inputGroup.get("Phone Number"))
+        .then((response) => {
+          setState(() {
+            if (response["error"] != "") {
+              errorMessage = response["error"];
+            } else {
+              Navigator.push(context,
+              CupertinoPageRoute(builder: (context) => 
+              const VerifyPhoneScreen()));
+            }
+          })
+        });
   }
 }

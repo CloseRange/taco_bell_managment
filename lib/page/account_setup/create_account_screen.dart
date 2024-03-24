@@ -16,10 +16,16 @@ class CreateAccountScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _CreateAccountState();
 }
 
+/// Represents the state of the CreateAccountScreen widget.
+///
+/// This class extends the [State] class and is responsible for managing the state
+/// of the CreateAccountScreen widget. It contains methods and properties that
+/// define the behavior and appearance of the widget.
 class _CreateAccountState extends State<StatefulWidget> {
   var inputGroup =
       InputGroup(["Phone Number", "Username", "Password", "Retype Password"]);
   String errorMessage = "";
+  bool waitingForResponse = false;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -66,8 +72,11 @@ class _CreateAccountState extends State<StatefulWidget> {
                   SizedBox(height: 10),
                   inputGroup.field(context, "Retype Password", obscure: true),
                   SizedBox(height: 10),
-                  EmphesizedButton("Create Account",
-                      callback: () => onCreateAccountResponse(context)),
+                  EmphesizedButton(
+                    "Create Account",
+                    callback: () => {onCreateAccountResponse(context)},
+                    loading: waitingForResponse,
+                  ),
                   SizedBox(height: 15),
                   LinkMessage("Already have an account?", "Login",
                       () => Navigator.pop(context)),
@@ -77,34 +86,39 @@ class _CreateAccountState extends State<StatefulWidget> {
           ),
         )),
       );
-  // void onLogin(BuildContext context) async {
-  //   Navigator.pop(context);
-  // }
 
-  // void onVerifyPhone(BuildContext context) async {
-  // }
-
-  // String phoneNumberConversion() {
-  //   // PhoneSetup.setPhone(inputGroup.get("Phone Number"));
-  //   PhoneVerify.setPhonenumber(inputGroup.get("Phone Number"));
-
-  //   return PhoneVerify.phonenumberFull;
-  // }
-
+  /// Handles the response when creating an account.
+  ///
+  /// This method is called when the user completes the account creation process.
+  /// It takes a [BuildContext] as a parameter, which is used to navigate to the
+  /// next screen or perform any other necessary actions.
   void onCreateAccountResponse(BuildContext context) {
     // print(response);
+
+    waitingForResponse = true;
+    String pass2 = inputGroup.get("Retype Password");
+    if (pass2 != inputGroup.get("Password")) {
+      setState(() {
+        errorMessage = "Passwords do not match";
+        waitingForResponse = false;
+      });
+      return;
+    }
+    setState(() {});
     PhoneVerify.attemptAccountCreate(inputGroup.get("Username"),
             inputGroup.get("Password"), inputGroup.get("Phone Number"))
         .then((response) => {
-          setState(() {
-            if (response["error"] != "") {
-              errorMessage = response["error"];
-            } else {
-              Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => 
-              const VerifyPhoneScreen()));
-            }
-          })
-        });
+              setState(() {
+                waitingForResponse = false;
+                if (response["error"] != "") {
+                  errorMessage = response["error"];
+                } else {
+                  Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                          builder: (context) => const VerifyPhoneScreen()));
+                }
+              })
+            });
   }
 }

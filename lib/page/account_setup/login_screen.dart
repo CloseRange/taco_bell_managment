@@ -5,6 +5,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:taco_bell_managment/page/account_setup/create_account_screen.dart';
+import 'package:taco_bell_managment/page/home_screen.dart';
+import 'package:taco_bell_managment/util/styler/nav_helper.dart';
 import 'package:taco_bell_managment/util/ui_widgets.dart';
 import 'package:taco_bell_managment/util/style_sheet.dart';
 
@@ -13,7 +15,6 @@ class LoginScreen extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => _LoginState();
-
 }
 
 class _LoginState extends State<StatefulWidget> {
@@ -45,16 +46,22 @@ class _LoginState extends State<StatefulWidget> {
                         fontWeight: FontWeight.bold,
                       )),
                   SizedBox(height: 10),
-                  Text("Welcome Back", style: TextStyle(fontSize: 24, color: Palette.getCore().text)),
-              
+                  Text("Welcome Back",
+                      style: TextStyle(
+                          fontSize: 24, color: Palette.getCore().text)),
+
                   SizedBox(height: 30),
                   inputGroup.field(context, "Username"),
                   SizedBox(height: 10),
                   inputGroup.field(context, "Password", obscure: true),
                   SizedBox(height: 10),
-                  EmphesizedButton("Sign In", callback: () => print("Okkk")),
+                  EmphesizedButton("Sign In", callback: () {
+                    gotoMainpage(context, HomeScreen());
+                  }),
                   SizedBox(height: 25),
-                  LinkMessage("Don't have an account?", "Create Account", () => onCreateAccount(context)),
+                  LinkMessage("Don't have an account?", "Create Account",
+                      () => onCreateAccount(context)),
+                  // EventPage.getActionButton(this),
                 ],
               ),
             ),
@@ -62,9 +69,7 @@ class _LoginState extends State<StatefulWidget> {
         )),
       );
   void onCreateAccount(BuildContext context) {
-    Navigator.push(
-      context,
-      CupertinoPageRoute(builder: (context) => const CreateAccountScreen())
-    );
+    Navigator.push(context,
+        CupertinoPageRoute(builder: (context) => const CreateAccountScreen()));
   }
 }

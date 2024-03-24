@@ -58,20 +58,30 @@ class PhoneVerify {
     }
   }
 
-  static void sendVerificationCode(String code) {
-    FirebaseApi.callFunction("callVerifyPhonenNumberCode", {
+  static Future<dynamic> sendVerificationCode(String code) async {
+    return FirebaseApi.callFunction("callVerifyPhoneNumberCode", {
       "username": "mike123",
       "code": code,
-    }).then((status) => {
-          // inputGroup.setError("Text Code", false)
-        });
+    });
+  }
+  static Future<dynamic> sendVerificationCodeResend() async {
+    return FirebaseApi.callFunction("callSendNewCode", {
+      "username": PhoneVerify.username,
+      "phonenumber": PhoneVerify.phonenumberFull,
+    });
+  }
+  static Future<dynamic> cancelAccountCreate() async {
+    return FirebaseApi.callFunction("callCancelAccountCreate", {
+      "username": PhoneVerify.username,
+      "notifID": FirebaseApi.notificationToken,
+    });
   }
 
   static Future<dynamic> attemptAccountCreate(
       String username, String password, String phonenumber) async {
     setUsername(username);
     setPhonenumber(phonenumber);
-    return FirebaseApi.callFunction("callVerifyPhonenumber", {
+    return FirebaseApi.callFunction("callCreateAccountAttempt", {
       "username": PhoneVerify.username,
       "phonenumber": PhoneVerify.phonenumberFull,
       "password": password,

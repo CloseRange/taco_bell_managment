@@ -1,4 +1,4 @@
-// ignore_for_file: no_logic_in_create_state
+// ignore_for_file: no_logic_in_create_state, avoid_print, prefer_interpolation_to_compose_strings
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,10 +7,12 @@ import 'package:taco_bell_managment/util/style_sheet.dart';
 class InputGroup {
   final Map<String, TextEditingController> _data = {};
   final Map<String, _InputGroupBox> _dataWidgets = {};
+  final Map<String, bool> _errors = {};
 
   InputGroup(List<String> widgets) {
     for (int i = 0; i < widgets.length; i++) {
       _data[widgets[i]] = TextEditingController();
+      _errors[widgets[i]] = false;
     }
   }
 
@@ -21,6 +23,11 @@ class InputGroup {
 
   void setError(String key, bool isError) {
     _dataWidgets[key]?.isError = isError;
+    _errors[key] ??= isError;
+  }
+
+  void clearField(String key) {
+    _data[key]?.clear();
   }
 
   Widget field(
@@ -33,6 +40,7 @@ class InputGroup {
     if (_data[key] == null) return const Text("Error: No key found");
     _dataWidgets[key] =
         _InputGroupBox(_data[key]!, hint ?? key, obscure, isNumber);
+    _dataWidgets[key]?.isError = _errors[key] ?? true;
     return _dataWidgets[key]!;
   }
 
@@ -111,11 +119,13 @@ class EmphesizedButton extends StatefulWidget {
   void Function()? callback;
   Future<dynamic> Function()? asyncCallback;
   bool enabled;
+  bool loading;
 
   EmphesizedButton(
     this.text, {
     this.asyncCallback,
     this.callback,
+    this.loading = false,
     this.enabled = true,
     super.key,
   });
@@ -127,22 +137,42 @@ class EmphesizedButton extends StatefulWidget {
 class _EmphesizedButtonState extends State<EmphesizedButton> {
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _onHit,
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Palette.getButton().main.withAlpha(widget.enabled ? 255 : 100),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-            child: Text(widget.text,
-                style: TextStyle(
-                    fontSize: 18,
-                    color: Palette.getButton().text,
-                    fontWeight: FontWeight.bold))),
-      ),
-    );
+    return widget.loading
+        ? ElevatedButton(
+            // onTap: _onHit,
+            onPressed: () {},
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Palette.getButton()
+                  .main
+                  .withAlpha(widget.enabled ? 200 : 100)),
+              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12))),
+              padding: MaterialStateProperty.all(const EdgeInsets.all(13)),
+            ),
+            child: const Center(
+                child: CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 3,
+            )),
+          )
+        : ElevatedButton(
+            // onTap: _onHit,
+            onPressed: _onHit,
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Palette.getButton()
+                  .main
+                  .withAlpha(widget.enabled ? 255 : 100)),
+              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12))),
+              padding: MaterialStateProperty.all(const EdgeInsets.all(18)),
+            ),
+            child: Center(
+                child: Text(widget.text,
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Palette.getButton().text,
+                        fontWeight: FontWeight.bold))),
+          );
   }
 
   void _onHit() {
@@ -152,7 +182,6 @@ class _EmphesizedButtonState extends State<EmphesizedButton> {
       setEnabled(false);
       widget.asyncCallback!().then((status) => setEnabled(true));
     }
-    // widget.callback ?? widget.asyncCallback
   }
 
   void setEnabled(bool enabled) {
@@ -177,7 +206,7 @@ class LinkMessage extends StatefulWidget {
     this.color,
     this.fontSize,
     super.key,
-    this.enabled=true,
+    this.enabled = true,
   });
 
   @override
@@ -197,10 +226,11 @@ class _LinkMessageState extends State<LinkMessage> {
                 fontSize: widget.fontSize)),
         const SizedBox(width: 10),
         GestureDetector(
-          onTap: widget.callback,
+          onTap: !widget.enabled ? () {} : widget.callback,
           child: Text(widget.link,
               style: TextStyle(
-                  color: (widget.color ?? Palette.getLink().text).withAlpha(widget.enabled ? 255 : 125),
+                  color: (widget.color ?? Palette.getLink().text)
+                      .withAlpha(widget.enabled ? 255 : 125),
                   fontWeight: FontWeight.bold,
                   fontSize: widget.fontSize)),
         )

@@ -1,8 +1,9 @@
 // ignore_for_file: prefer_const_constructors, sort_child_properties_last, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:taco_bell_managment/util/ui_widgets.dart';
+import 'package:taco_bell_managment/page/screens/screen_test.dart';
+import 'package:taco_bell_managment/page/screens/screen_test2.dart';
+import 'package:taco_bell_managment/page/screens/screen_test3.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,46 +13,64 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeState extends State<StatefulWidget> {
-  String name = "";
-  String to = "";
-  String message = "";
-  var inputG = InputGroup([]);
-  
+  var _currentIndex = 0;
+  final _bottomNavigationBarItems = const [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.chat_rounded, color: Colors.black),
+      label: "Chat",
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.schedule_rounded, color: Colors.black),
+      label: "Schedule",
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.person, color: Colors.black),
+      label: "Employees",
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.task_rounded, color: Colors.black),
+      label: "Tasks",
+    ),
+  ];
+  PageController _pageController = PageController(initialPage: 0);
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-        // appBar: AppBar(
-        //   title: Text('Taco Bell Managment',
-        //       style: TextStyle(
-        //         color: Palette.textTint,
-        //       )),
-        //   centerTitle: true,
-        //   backgroundColor: Palette.tint,
-        // ),
-        // body: Center(
-        //     child: Column(
-        //   children: [
-        //     inputG.field("Name"),
-        //     inputG.field("To"),
-        //     inputG.field("Message"),
-        //   ],
-        //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        // )),
-        // backgroundColor: Palette.background,
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () {
-        //     FirebaseApi.write("messages", payload: {
-        //       "name": inputG.get("Name"),
-        //       "to": inputG.get("To"),
-        //       "message": inputG.get("Message"),
-        //     });
-        //   },
-        //   backgroundColor: Palette.button,
-        //   child: Text(
-        //     "send",
-        //     style: TextStyle(color: Palette.textTint),
-        //   ),
-        // ),
-      );
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: PageView(
+        scrollDirection: Axis.vertical,
+        controller: PageController(initialPage: 1),
+        children: [
+          ScreenTest3(),
+          Scaffold(
+            body: PageView(
+              controller: _pageController,
+              onPageChanged: (value) {
+                setState(() {
+                  _currentIndex = value;
+                });
+              },
+              children: [
+                ScreenTest1(),
+                ScreenTest2(),
+                ScreenTest1(),
+                ScreenTest2(),
+              ],
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+              items: _bottomNavigationBarItems,
+              currentIndex: _currentIndex,
+              onTap: (value) {
+                _pageController.animateToPage(value,
+                    duration: Duration(milliseconds: 500), curve: Curves.ease);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ignore: avoid_print
